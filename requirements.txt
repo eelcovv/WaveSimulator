@@ -4,6 +4,7 @@ matplotlib
 mpltools
 numpy
 pandas
+pymarine
 PyQt4
 pyqtgraph
 pytest
