@@ -3,11 +3,11 @@ import sys
 
 import numpy as np
 import pyqtgraph as pg
-from PyQt5 import QtGui, QtCore, uic, QtWidgets
-from PyQt5.Qt import QMainWindow, QApplication
+from PyQt5.QtWidgets import (QDialog, QDialogButtonBox, QRadioButton, QCheckBox, QGridLayout)
+from PyQt5.QtGui import QGuiApplication
 
 
-class SpectrumPlotDlg(QtGui.QDialog):
+class SpectrumPlotDlg(QDialog):
     def __init__(self, waves, showSpectraPlot, parent=None):
         super(SpectrumPlotDlg, self).__init__(parent)
 
@@ -22,44 +22,44 @@ class SpectrumPlotDlg(QtGui.QDialog):
         # actually, I want to hide it
         # self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
-        self.buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Close)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Close)
 
         self.radiobuttons = []
-        self.radiobuttons.append(QtGui.QRadioButton())
+        self.radiobuttons.append(QRadioButton())
         self.radiobuttons[-1].setText("Spectrum K/Omega")
         self.radiobuttons[-1].setChecked(True)
-        self.radiobuttons.append(QtGui.QRadioButton())
+        self.radiobuttons.append(QRadioButton())
         self.radiobuttons[-1].setText("Spectrum K/Mod")
-        self.radiobuttons.append(QtGui.QRadioButton())
+        self.radiobuttons.append(QRadioButton())
         self.radiobuttons[-1].setText("Spectrum K/Phase")
-        self.radiobuttons.append(QtGui.QRadioButton())
+        self.radiobuttons.append(QRadioButton())
         self.radiobuttons[-1].setText("Spectrum K Module/Spreading function")
-        self.radiobuttons.append(QtGui.QRadioButton())
+        self.radiobuttons.append(QRadioButton())
         self.radiobuttons[-1].setText("k-theta Amplitude/k-theta Phase")
-        self.radiobuttons.append(QtGui.QRadioButton())
+        self.radiobuttons.append(QRadioButton())
         self.radiobuttons[-1].setText("kx/ky Amplitude/kx-ky Phase")
 
         self.checkBox_wavelines = []
         self.checkBox_wavepoints = []
         self.checkBox_triangles = []
         for i in range(2):
-            self.checkBox_wavelines.append(QtGui.QCheckBox())
+            self.checkBox_wavelines.append(QCheckBox())
             self.checkBox_wavelines[-1].setText("Plot Wave {}".format(i + 1))
             self.checkBox_wavelines[-1].setChecked(True)
             self.connect(self.checkBox_wavelines[-1], QtCore.SIGNAL("toggled(bool)"),
                          self.checkToggled)
-            self.checkBox_wavepoints.append(QtGui.QCheckBox())
+            self.checkBox_wavepoints.append(QCheckBox())
             self.checkBox_wavepoints[-1].setText("Add Scatter Points Wave {}".format(i + 1))
             self.checkBox_wavepoints[-1].setChecked(True)
             self.connect(self.checkBox_wavepoints[-1], QtCore.SIGNAL("toggled(bool)"),
                          self.checkToggled)
-            self.checkBox_triangles.append(QtGui.QCheckBox())
+            self.checkBox_triangles.append(QCheckBox())
             self.checkBox_triangles[-1].setText("Add Triangles at key points {}".format(i + 1))
             self.checkBox_triangles[-1].setChecked(True)
             self.connect(self.checkBox_triangles[-1], QtCore.SIGNAL("toggled(bool)"),
                          self.checkToggled)
 
-        # stack = QtGui.QStackedWidget()
+        # stack = QStackedWidget()
 
         self.view = pg.GraphicsLayoutWidget()
 
@@ -94,7 +94,7 @@ class SpectrumPlotDlg(QtGui.QDialog):
         self.updatePlots()
 
         # create the plot screen and the buttons below it
-        grid = QtGui.QGridLayout()
+        grid = QGridLayout()
         grid.addWidget(self.view, 0, 0, 1, 5)
 
         n = 0
