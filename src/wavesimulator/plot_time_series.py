@@ -1,9 +1,9 @@
 import os
 import sys
-from HMC.Tools.miscellaneous import (print_banner, make_directory, init_logging, clean_up_plot, clear_argument_list,
+from wavesimulator.utils import (print_banner,  clean_up_plot, clear_argument_list,
                                      valid_date, my_colors, get_logger, analyse_annotations,
                                      move_script_path_to_back_of_search_path)
-from HMC.Marine.Models.marinespectra import (spectrum_jonswap, d_omega_e_prime, omega_vs_omega_e, omega_e_vs_omega)
+from pymarine.waves.wave_spectra import (spectrum_jonswap, d_omega_e_prime, omega_vs_omega_e, omega_e_vs_omega)
 
 # remove the script path from the path to avoid messing up the __version
 move_script_path_to_back_of_search_path(__file__)

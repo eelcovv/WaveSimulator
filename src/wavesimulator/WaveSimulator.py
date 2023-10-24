@@ -1,4 +1,4 @@
-__author__ = 'Eelco van Vliet'
+__author__ = "Eelco van Vliet"
 
 import argparse
 import logging
@@ -9,7 +9,7 @@ from re import search, sub
 import pandas as pd
 import pyqtgraph as pg
 import pyqtgraph.exporters
-from numpy import (radians, linspace, mod, full, nan, zeros, where, array)
+from numpy import radians, linspace, mod, full, nan, zeros, where, array
 from pyqtgraph.Qt import QtCore, QtGui
 from pyqtgraph.parametertree import ParameterTree
 from scipy import interpolate
@@ -17,22 +17,28 @@ from scipy import interpolate
 # import the dialog for the spectra
 import SpectrumPlotDlg
 import SurfacePlotDlg
+
 # import the wave modules
-import hmc_marine.wave_fields as wf
+import pymarine.waves.wave_fields as wf
+
 # import all the icons images (should be generated with
 # pyrcc4 -py3 -o resources.py resources.qrc
 # where resource.qrc is an xml file containing a list with the aliases
 import resources
+
 # import module for logging
 # initiales my logging settings
-from hmc_utils.misc import (create_logger, clear_argument_list, get_logger)
-from hmc_utils.numerical import (get_parameter_list_key)
+from wavesimulator.utils import create_logger, clear_argument_list, get_logger
+from wavesimulator.utils import get_parameter_list_key
+
 # import the parameter tree
 from parameters import JSParameters
 
 # version control to be set up later
 __version__ = 0.1
-res_file = resources.__file__  # this line is only to prevent the import resources statement to be
+res_file = (
+    resources.__file__
+)  # this line is only to prevent the import resources statement to be
 # removed by PyCharm
 
 
@@ -90,20 +96,26 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
         # create the dialog without showing it such that we can connect it to a signal
         # also, pass the showSpectraButton such that we can uncheck it once the dialog is closed by
         # the close button
-        self.spectrumPlotDialog = SpectrumPlotDlg.SpectrumPlotDlg(self.waves2D,
-                                                                  self.showSpectraPlot)
+        self.spectrumPlotDialog = SpectrumPlotDlg.SpectrumPlotDlg(
+            self.waves2D, self.showSpectraPlot
+        )
 
-        self.surfacePlotDialog = SurfacePlotDlg.SurfacePlotDlg(self.waves2D, self.showSurfacePlot,
-                                                               self.moviefilebase)
+        self.surfacePlotDialog = SurfacePlotDlg.SurfacePlotDlg(
+            self.waves2D, self.showSurfacePlot, self.moviefilebase
+        )
 
-        self.connect(self.pars.Parameters,
-                     QtCore.SIGNAL('tree_parameter_changed'), self.transfer_parameters)
+        self.connect(
+            self.pars.Parameters,
+            QtCore.SIGNAL("tree_parameter_changed"),
+            self.transfer_parameters,
+        )
 
         settings = QtCore.QSettings()
         self.recentFiles = settings.value("RecentFiles") or []
 
-        self.restoreGeometry(settings.value("WaveSimulatorMainWindow/Geometry",
-                                            QtCore.QByteArray()))
+        self.restoreGeometry(
+            settings.value("WaveSimulatorMainWindow/Geometry", QtCore.QByteArray())
+        )
 
         self.setWindowTitle("Wave Simulator")
 
@@ -123,7 +135,9 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
         """
 
         if parameter is not None:
-            self.logger.debug("received signal from {} {}".format(parameter, type(parameter)))
+            self.logger.debug(
+                "received signal from {} {}".format(parameter, type(parameter))
+            )
             self.dirty = True
 
         parSpectrum = self.pars.Parameters.names["Jonswap"]
@@ -143,7 +157,9 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
             # only waves from 0 to 180 allowed (0 is north an 90 is east and 180 is south).
             jswave2D.Theta_0 = radians(parSpectrum.theta0.value())
-            jswave2D.Theta_s_spreading_factor = parSpectrum.theta_s_spreading_factor.value()
+            jswave2D.Theta_s_spreading_factor = (
+                parSpectrum.theta_s_spreading_factor.value()
+            )
             jswave2D.theta_area_fraction = parWave.theta_area_percentage.value() / 100.0
             jswave2D.n_theta_nodes = int(parDomain.n_theta_nodes.value())
 
@@ -196,7 +212,8 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             else:
                 raise AssertionError(
                     "wave construction should be one of the following: DFTpolar, DFTcartesian, FFT"
-                    ". Found {}. Something is wrong".format(jswave.wave_construction))
+                    ". Found {}. Something is wrong".format(jswave.wave_construction)
+                )
 
             if jswave.seed is not int(parWave.seed.value()):
                 jswave.seed = int(parWave.seed.value())
@@ -225,7 +242,9 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
             jswave.n_bins_equal_energy = int(parWave.n_bins_equal_energy.value())
             jswave.lock_nodes_to_wave_one = bool(parWave.lock_nodes_to_wave_one.value())
-            jswave.use_subrange_energy_limits = bool(parWave.use_subrange_energy_limits.value())
+            jswave.use_subrange_energy_limits = bool(
+                parWave.use_subrange_energy_limits.value()
+            )
 
             if parameter is None or (not bool(search("Time", parameter))):
                 # do not update the mesh if you are only updating the time value
@@ -239,12 +258,19 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
                     jswave2D.calculate_spectral_components()
 
                 if self.monitor_waves:
-                    column_names = ["{:.1f}".format(vel) for vel in self.wave_monitor_velocities]
+                    column_names = [
+                        "{:.1f}".format(vel) for vel in self.wave_monitor_velocities
+                    ]
                     self.wave_monitors[i] = pd.DataFrame(
                         full((jswave.nt_samples, len(column_names)), nan),
                         columns=column_names,
-                        index=linspace(jswave.t_start, jswave.t_end, jswave.nt_samples,
-                                       endpoint=False))
+                        index=linspace(
+                            jswave.t_start,
+                            jswave.t_end,
+                            jswave.nt_samples,
+                            endpoint=False,
+                        ),
+                    )
 
                     self.wave_monitors[i].index.name = "Time"
 
@@ -285,7 +311,6 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
         self.logger.debug("start playing movie at {:.2f}".format(self.waves1D[0].time))
 
         while self.waves1D[0].time < self.waves1D[0].t_end or self.repeat:
-
             if self.waves1D[0].time >= self.waves1D[0].t_end:
                 self.logger.info("reset time to zero")
                 for wave in self.waves1D:
@@ -300,7 +325,9 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
                         wave.t_index = 0
 
                 # draw last time with current time
-                self.pars.Parameters.names["Time"].current_time.setValue(self.waves1D[0].time)
+                self.pars.Parameters.names["Time"].current_time.setValue(
+                    self.waves1D[0].time
+                )
                 self.updatePlots()
                 self.logger.debug("stop playing at {} s".format(self.waves1D[0].time))
                 break
@@ -310,7 +337,9 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
                 wave.time += wave.delta_t
                 wave.t_index += 1
 
-            self.logger.debug("Updating time step to {:.2f}".format(self.waves1D[0].time))
+            self.logger.debug(
+                "Updating time step to {:.2f}".format(self.waves1D[0].time)
+            )
 
             self.updatePlots()
 
@@ -328,33 +357,34 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             self.showSurfacePlot.setChecked(False)
 
     def OpenSpectrumPlot(self):
-
         if self.showSpectraPlot.isChecked():
-            self.spectrumPlotDialog = SpectrumPlotDlg.SpectrumPlotDlg(self.waves2D,
-                                                                      self.showSpectraPlot)
+            self.spectrumPlotDialog = SpectrumPlotDlg.SpectrumPlotDlg(
+                self.waves2D, self.showSpectraPlot
+            )
             self.spectrumPlotDialog.show()
         else:
             self.CloseSpectrumPlot()
 
     def OpenSurfacePlot(self):
-
         if self.showSurfacePlot.isChecked():
-            self.surfacePlotDialog = SurfacePlotDlg.SurfacePlotDlg(self.waves2D,
-                                                                   self.showSurfacePlot)
+            self.surfacePlotDialog = SurfacePlotDlg.SurfacePlotDlg(
+                self.waves2D, self.showSurfacePlot
+            )
             self.surfacePlotDialog.show()
             try:
                 self.surfacePlotDialog.initSurfaces()
                 self.surfacePlotDialog.updatePlots()
             except:
-                QtGui.QMessageBox.warning(self,
-                                          "No 2D wave initialised yet",
-                                          "Please switch on Two-D Wave in Jonswap Section",
-                                          QtGui.QMessageBox.Ok)
+                QtGui.QMessageBox.warning(
+                    self,
+                    "No 2D wave initialised yet",
+                    "Please switch on Two-D Wave in Jonswap Section",
+                    QtGui.QMessageBox.Ok,
+                )
         else:
             self.CloseSurfacePlot()
 
     def setupGUI(self):
-
         # this layout is required to put in the central widget
         self.layout = QtGui.QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -364,88 +394,159 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
         self.centralwidget.setLayout(self.layout)
 
         # the file menu actions
-        fileOpenAction = self.createAction("&Open...", self.fileOpen,
-                                           QtGui.QKeySequence.Open, "fileopen",
-                                           "Open an existing image file")
-        fileSaveAction = self.createAction("&Save", self.fileSave,
-                                           QtGui.QKeySequence.Save, "filesave", "Save the image")
-        fileSaveAsAction = self.createAction("Save &As...", self.fileSaveAs,
-                                             QtGui.QKeySequence.SaveAs,
-                                             icon="filesaveas",
-                                             tip="Save the image using a new name")
-        moveSaveAction = self.createAction("Save &Movie Frames...",
-                                           self.movieSaveAs, "Ctrl+M",
-                                           icon="movie",
-                                           tip="Save the movie frame of the 2D surface")
-        ExportAction = self.createAction("&Export Spectrum...",
-                                         self.spectrumExportAs, "Ctrl+E",
-                                         icon="export",
-                                         tip="Export the complex wave amplitude of the spectrum")
-        fileQuitAction = self.createAction("&Quit", self.close,
-                                           "Ctrl+Q", "filequit", "Close the application")
+        fileOpenAction = self.createAction(
+            "&Open...",
+            self.fileOpen,
+            QtGui.QKeySequence.Open,
+            "fileopen",
+            "Open an existing image file",
+        )
+        fileSaveAction = self.createAction(
+            "&Save",
+            self.fileSave,
+            QtGui.QKeySequence.Save,
+            "filesave",
+            "Save the image",
+        )
+        fileSaveAsAction = self.createAction(
+            "Save &As...",
+            self.fileSaveAs,
+            QtGui.QKeySequence.SaveAs,
+            icon="filesaveas",
+            tip="Save the image using a new name",
+        )
+        moveSaveAction = self.createAction(
+            "Save &Movie Frames...",
+            self.movieSaveAs,
+            "Ctrl+M",
+            icon="movie",
+            tip="Save the movie frame of the 2D surface",
+        )
+        ExportAction = self.createAction(
+            "&Export Spectrum...",
+            self.spectrumExportAs,
+            "Ctrl+E",
+            icon="export",
+            tip="Export the complex wave amplitude of the spectrum",
+        )
+        fileQuitAction = self.createAction(
+            "&Quit", self.close, "Ctrl+Q", "filequit", "Close the application"
+        )
 
         # the tool bar actions
-        self.playMovieAction = self.createAction("&Play",
-                                                 self.startMovie, "Ctrl+P", "play",
-                                                 "Play the movie", True, "toggled(bool)")
+        self.playMovieAction = self.createAction(
+            "&Play",
+            self.startMovie,
+            "Ctrl+P",
+            "play",
+            "Play the movie",
+            True,
+            "toggled(bool)",
+        )
 
-        self.stopMovieAction = self.createAction("&Stop",
-                                                 self.stopMovie, "Ctrl+S", "stop",
-                                                 "Stop the movie", True, "toggled(bool)")
+        self.stopMovieAction = self.createAction(
+            "&Stop",
+            self.stopMovie,
+            "Ctrl+S",
+            "stop",
+            "Stop the movie",
+            True,
+            "toggled(bool)",
+        )
 
-        self.pauseMovieAction = self.createAction("P&ause",
-                                                  self.pauseMovie, "Ctrl+A", "pause",
-                                                  "Pause the movie", True, "toggled(bool)")
+        self.pauseMovieAction = self.createAction(
+            "P&ause",
+            self.pauseMovie,
+            "Ctrl+A",
+            "pause",
+            "Pause the movie",
+            True,
+            "toggled(bool)",
+        )
 
-        self.loopMovieAction = self.createAction("&Loop",
-                                                 self.loopMovie, "Ctrl+L", "loop",
-                                                 "Play movie in a loop", True, "toggled(bool)")
+        self.loopMovieAction = self.createAction(
+            "&Loop",
+            self.loopMovie,
+            "Ctrl+L",
+            "loop",
+            "Play movie in a loop",
+            True,
+            "toggled(bool)",
+        )
 
-        self.showSpectraPlot = self.createAction("Spec&tra",
-                                                 self.OpenSpectrumPlot, "Ctrl+T", "plots",
-                                                 "Show the spectra", True, "toggled(bool)")
+        self.showSpectraPlot = self.createAction(
+            "Spec&tra",
+            self.OpenSpectrumPlot,
+            "Ctrl+T",
+            "plots",
+            "Show the spectra",
+            True,
+            "toggled(bool)",
+        )
 
-        self.showSurfacePlot = self.createAction("S&urface",
-                                                 self.OpenSurfacePlot, "Ctrl+U", "surface",
-                                                 "Show the 2D surface", True, "toggled(bool)")
+        self.showSurfacePlot = self.createAction(
+            "S&urface",
+            self.OpenSurfacePlot,
+            "Ctrl+U",
+            "surface",
+            "Show the 2D surface",
+            True,
+            "toggled(bool)",
+        )
 
         # create the file tool bar
         self.fileToolbar = self.addToolBar("File")
         self.fileToolbar.setObjectName("FileToolBar")
-        self.addActions(self.fileToolbar,
-                        (fileOpenAction, fileSaveAction, ExportAction, moveSaveAction))
+        self.addActions(
+            self.fileToolbar,
+            (fileOpenAction, fileSaveAction, ExportAction, moveSaveAction),
+        )
 
         # create the control tool bar
         self.controlToolBar = self.addToolBar("Control")
         self.controlToolBar.setObjectName("ControlToolBar")
-        self.addActions(self.controlToolBar,
-                        [self.playMovieAction, self.stopMovieAction, self.pauseMovieAction,
-                         self.loopMovieAction])
+        self.addActions(
+            self.controlToolBar,
+            [
+                self.playMovieAction,
+                self.stopMovieAction,
+                self.pauseMovieAction,
+                self.loopMovieAction,
+            ],
+        )
 
         # create the control tool bar
         self.plotToolBar = self.addToolBar("Plots")
         self.plotToolBar.setObjectName("PlotToolBar")
-        self.addActions(self.plotToolBar,
-                        [self.showSpectraPlot, self.showSurfacePlot])
+        self.addActions(self.plotToolBar, [self.showSpectraPlot, self.showSurfacePlot])
 
         # create the file menu
         self.fileMenu = self.menuBar().addMenu("&File")
         self.fileMenuActions = (
-            fileOpenAction, fileSaveAction, fileSaveAsAction, ExportAction, moveSaveAction,
-            fileQuitAction)
-        self.connect(self.fileMenu, QtCore.SIGNAL("aboutToShow()"),
-                     self.updateFileMenu)
+            fileOpenAction,
+            fileSaveAction,
+            fileSaveAsAction,
+            ExportAction,
+            moveSaveAction,
+            fileQuitAction,
+        )
+        self.connect(self.fileMenu, QtCore.SIGNAL("aboutToShow()"), self.updateFileMenu)
 
         # create the control menu
         self.controlMenu = self.menuBar().addMenu("&Control")
-        self.addActions(self.controlMenu,
-                        [self.playMovieAction, self.stopMovieAction, self.pauseMovieAction,
-                         self.loopMovieAction])
+        self.addActions(
+            self.controlMenu,
+            [
+                self.playMovieAction,
+                self.stopMovieAction,
+                self.pauseMovieAction,
+                self.loopMovieAction,
+            ],
+        )
 
         # create the plot menu
         self.plotMenu = self.menuBar().addMenu("&Plots")
-        self.addActions(self.plotMenu,
-                        [self.showSpectraPlot, self.showSurfacePlot])
+        self.addActions(self.plotMenu, [self.showSpectraPlot, self.showSurfacePlot])
 
         # now, set up the centrail widget consisting of a parameter tree at the left and two plots
         # (stacked on top of each other) at the right
@@ -477,16 +578,20 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
             # set the plot dependent properties
             if i == 0:
-                self.plots[-1].setTitle('Wave vs distance at time : {:.2f} s'.format(0.0))
-                self.plots[-1].setXLink('Wave field')
-                self.plots[-1].setLabel('bottom', "X-position", units='m')
+                self.plots[-1].setTitle(
+                    "Wave vs distance at time : {:.2f} s".format(0.0)
+                )
+                self.plots[-1].setXLink("Wave field")
+                self.plots[-1].setLabel("bottom", "X-position", units="m")
             else:
-                self.plots[-1].setTitle('Wave vs time at position: {:.2f} s'.format(0.0))
-                self.plots[-1].setXLink('Point measurement')
-                self.plots[-1].setLabel('bottom', "Time", units='m')
+                self.plots[-1].setTitle(
+                    "Wave vs time at position: {:.2f} s".format(0.0)
+                )
+                self.plots[-1].setXLink("Point measurement")
+                self.plots[-1].setLabel("bottom", "Time", units="m")
 
             # set the generic properties
-            self.plots[-1].setLabel('left', "Amplitude", units='m')
+            self.plots[-1].setLabel("left", "Amplitude", units="m")
             self.plots[-1].showGrid(x=True, y=False)
 
             # add the plot to the splitter
@@ -538,32 +643,41 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
     # @profile
     def plot_waves_vs_distance(self, plot):
-
-        plot.setTitle('Wave vs distance at time : {:.2f} s'.format(self.waves1D[0].time))
+        plot.setTitle(
+            "Wave vs distance at time : {:.2f} s".format(self.waves1D[0].time)
+        )
 
         for i, jswave in enumerate(self.waves1D):
-
             if jswave.plot.show:
                 # recalculate the current wave
                 jswave.calculate_wave_surface()
 
                 # plot the line
-                plot.plot(jswave.xpoints, jswave.amplitude,
-                          pen=pg.mkPen(color=jswave.plot.color, width=jswave.plot.linewidth))
+                plot.plot(
+                    jswave.xpoints,
+                    jswave.amplitude,
+                    pen=pg.mkPen(color=jswave.plot.color, width=jswave.plot.linewidth),
+                )
 
                 # add some scatter points
                 if jswave.plot.scattersize > 0:
-                    plot.addItem(pg.ScatterPlotItem(jswave.xpoints,
-                                                    jswave.amplitude,
-                                                    size=jswave.plot.scattersize,
-                                                    pen=jswave.plot.color))
+                    plot.addItem(
+                        pg.ScatterPlotItem(
+                            jswave.xpoints,
+                            jswave.amplitude,
+                            size=jswave.plot.scattersize,
+                            pen=jswave.plot.color,
+                        )
+                    )
 
                 # get the data from the last time step
                 if self.monitor_waves:
                     try:
                         time = self.waves2D[0].wave1D.time
                         plot_monitor = "3.0"
-                        i_mon = where(self.wave_monitors[0].columns.values == plot_monitor)[0][0]
+                        i_mon = where(
+                            self.wave_monitors[0].columns.values == plot_monitor
+                        )[0][0]
                         a_mon = self.wave_monitors[0].ix[time, plot_monitor]
                         x_mon = self.wave_monitor_positions[i_mon]
                         point = array([x_mon, a_mon]).reshape((2, 1))
@@ -573,11 +687,13 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
                         self.logger.warning("could not get t_index")
                     else:
                         plot.addItem(
-                            pg.ScatterPlotItem(point[0], point[1], pen="r", brush="r", size=5))
+                            pg.ScatterPlotItem(
+                                point[0], point[1], pen="r", brush="r", size=5
+                            )
+                        )
 
     # @profile
     def updatePlots(self):
-
         self.clear_plots_and_legends()
 
         # sample only the first wave
@@ -590,14 +706,18 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             wave = self.waves2D[cnt].wave1D
             if wave.plot.save_image and self.moviefilebase:
                 # dump the picture to a file
-                movieframename = self.moviefilebase + "_wave{}_{:06d}.png".format(1, wave.t_index)
+                movieframename = self.moviefilebase + "_wave{}_{:06d}.png".format(
+                    1, wave.t_index
+                )
 
                 self.logger.debug("saving to {}".format(movieframename))
                 try:
                     exporter = pg.exporters.ImageExporter(plot)
                     exporter.export(movieframename)
                 except:
-                    self.logger.warning("exporting movie frame failed: {}".format(movieframename))
+                    self.logger.warning(
+                        "exporting movie frame failed: {}".format(movieframename)
+                    )
 
         if self.waves2D[0].wave1D.twoD and self.surfacePlotDialog:
             if self.moviefilebase is None and self.filename is not None:
@@ -608,7 +728,6 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
     # @profile
     def clear_plots_and_legends(self):
-
         # clear the plots
         for plot in self.plots:
             plot.clear()
@@ -627,8 +746,16 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             else:
                 target.addAction(action)
 
-    def createAction(self, text, slot=None, shortcut=None, icon=None,
-                     tip=None, checkable=False, signal="triggered()"):
+    def createAction(
+        self,
+        text,
+        slot=None,
+        shortcut=None,
+        icon=None,
+        tip=None,
+        checkable=False,
+        signal="triggered()",
+    ):
         action = QtGui.QAction(text, self)
         if icon is not None:
             action.setIcon(QtGui.QIcon(":/{}.png".format(icon)))
@@ -644,7 +771,6 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
         return action
 
     def closeEvent(self, event):
-
         if self.okToContinue():
             # make sure the movie stops playing
             self.playing = False
@@ -666,11 +792,12 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
     def okToContinue(self):
         if self.dirty:
-            reply = QtGui.QMessageBox.question(self,
-                                               "Settings changed",
-                                               "Save unsaved changes?",
-                                               QtGui.QMessageBox.Yes | QtGui.QMessageBox.No |
-                                               QtGui.QMessageBox.Cancel)
+            reply = QtGui.QMessageBox.question(
+                self,
+                "Settings changed",
+                "Save unsaved changes?",
+                QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel,
+            )
             if reply == QtGui.QMessageBox.Cancel:
                 return False
             elif reply == QtGui.QMessageBox.Yes:
@@ -685,7 +812,8 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
         if fname and QtCore.QFile.exists(fname):
             self.logger.info("loading {}".format(fname))
             self.statusBar().showMessage(
-                "Initialising configuration : {} ...".format(basename(fname)))
+                "Initialising configuration : {} ...".format(basename(fname))
+            )
             self.loadFile(fname)
         else:
             self.logger.info("setting initial parameters ")
@@ -705,12 +833,13 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
         if recentFiles:
             self.fileMenu.addSeparator()
             for i, fname in enumerate(recentFiles):
-                action = QtGui.QAction(QtCore.Icon(":/icon.png"),
-                                       "&{} {}".format(i + 1, QtCore.QFileInfo(
-                                           fname).fileName()), self)
+                action = QtGui.QAction(
+                    QtCore.Icon(":/icon.png"),
+                    "&{} {}".format(i + 1, QtCore.QFileInfo(fname).fileName()),
+                    self,
+                )
                 action.setData(fname)
-                self.connect(action, QtCore.SIGNAL("triggered()"),
-                             self.loadFile)
+                self.connect(action, QtCore.SIGNAL("triggered()"), self.loadFile)
                 self.fileMenu.addAction(action)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.fileMenuActions[-1])
@@ -718,15 +847,16 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
     def fileOpen(self):
         if not self.okToContinue():
             return
-        dir = dirname(self.filename) \
-            if self.filename is not None else "."
+        dir = dirname(self.filename) if self.filename is not None else "."
 
-        formats = (["*.{}".format(extension.lower()) for extension in ["cfg"]])
+        formats = ["*.{}".format(extension.lower()) for extension in ["cfg"]]
 
-        fname = QtGui.QFileDialog.getOpenFileName(self,
-                                                  "Wave Simulator  - Choose Configuration", dir,
-                                                  "Configuration files ({})".format(
-                                                      " ".join(formats)))
+        fname = QtGui.QFileDialog.getOpenFileName(
+            self,
+            "Wave Simulator  - Choose Configuration",
+            dir,
+            "Configuration files ({})".format(" ".join(formats)),
+        )
 
         if fname:
             self.loadFile(fname)
@@ -774,12 +904,13 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
     def fileSaveAs(self):
         fname = self.filename if self.filename is not None else "."
-        formats = (["*.{}".format(format.lower())
-                    for format in ["cfg"]])
-        fname = QtGui.QFileDialog.getSaveFileName(self,
-                                                  "Wave Simulator - Save Configuration", fname,
-                                                  "Configuration files ({})".format(
-                                                      " ".join(formats)))
+        formats = ["*.{}".format(format.lower()) for format in ["cfg"]]
+        fname = QtGui.QFileDialog.getSaveFileName(
+            self,
+            "Wave Simulator - Save Configuration",
+            fname,
+            "Configuration files ({})".format(" ".join(formats)),
+        )
         if fname:
             if "." not in fname:
                 fname += ".cfg"
@@ -796,18 +927,26 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
                 # the twoD flag is checked: export the 2D wave numbers
                 for i, wave in enumerate(self.waves2D):
                     if wave.wave1D.plot.show:
-                        fname = sub("[_1|_2]*.w2d", "_{}.w2d".format(i + 1, ".w2d"),
-                                    self.exportfile)
+                        fname = sub(
+                            "[_1|_2]*.w2d",
+                            "_{}.w2d".format(i + 1, ".w2d"),
+                            self.exportfile,
+                        )
                         self.updateStatus("Export 2D wave nodes to {}".format(fname))
                         wave.export_complex_amplitudes(fname)
                     else:
-                        self.logger.info("wave {} not active, not exporting".format(i + 1))
+                        self.logger.info(
+                            "wave {} not active, not exporting".format(i + 1)
+                        )
             else:
                 # the twoD flag is not checked, export the 1D
                 for i, wave in enumerate(self.waves1D):
                     if wave.plot.show:
-                        fname = sub("[_1|_2]*.w1d", "_{}.w1d".format(i + 1, ".w1d"),
-                                    self.exportfile)
+                        fname = sub(
+                            "[_1|_2]*.w1d",
+                            "_{}.w1d".format(i + 1, ".w1d"),
+                            self.exportfile,
+                        )
                         self.updateStatus("Export 1D wave nodes to {}".format(fname))
                         try:
                             wave.export_complex_amplitudes(fname)
@@ -817,21 +956,26 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
                         if i == 0:
                             base, ext = splitext(fname)
                             fname = base + "_mon.xls"
-                            self.updateStatus("Export 1D wave monitor to {}".format(fname))
+                            self.updateStatus(
+                                "Export 1D wave monitor to {}".format(fname)
+                            )
                             if self.monitor_waves:
                                 with pd.ExcelWriter(fname, append=False) as writer:
                                     self.wave_monitors[i].to_excel(writer)
                     else:
-                        self.logger.info("wave {} not active, not exporting".format(i + 1))
+                        self.logger.info(
+                            "wave {} not active, not exporting".format(i + 1)
+                        )
 
     def spectrumExportAs(self):
         fname = self.exportfile if self.exportfile is not None else "."
-        formats = (["*.{}".format(format.lower())
-                    for format in ["h5", "cfg", "xls"]])
-        fname = QtGui.QFileDialog.getSaveFileName(self,
-                                                  "Wave Simulator - Export Wave Aplitudes", fname,
-                                                  "Wave amplitude files ({})".format(
-                                                      " ".join(formats)))
+        formats = ["*.{}".format(format.lower()) for format in ["h5", "cfg", "xls"]]
+        fname = QtGui.QFileDialog.getSaveFileName(
+            self,
+            "Wave Simulator - Export Wave Aplitudes",
+            fname,
+            "Wave amplitude files ({})".format(" ".join(formats)),
+        )
         if fname:
             if "." not in fname:
                 if self.waves2D[0].wave1D.twoD:
@@ -843,11 +987,13 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
     def movieSaveAs(self):
         fname = self.moviefilebase if self.moviefilebase is not None else "."
-        formats = (["*.{}".format(format.lower())
-                    for format in ["png", "h5", "cfg"]])
-        fname = QtGui.QFileDialog.getSaveFileName(self,
-                                                  "Wave Simulator - Save Movie Frames", fname,
-                                                  "Image files ({})".format(" ".join(formats)))
+        formats = ["*.{}".format(format.lower()) for format in ["png", "h5", "cfg"]]
+        fname = QtGui.QFileDialog.getSaveFileName(
+            self,
+            "Wave Simulator - Save Movie Frames",
+            fname,
+            "Image files ({})".format(" ".join(formats)),
+        )
         if fname:
             fname = sub("[_\d*]*.png", "", fname)
 
@@ -856,8 +1002,7 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
     def updateStatus(self, message):
         self.statusBar().showMessage(message, 5000)
         if self.filename is not None:
-            self.setWindowTitle("Wave Simulator - %s[*]" % \
-                                basename(self.filename))
+            self.setWindowTitle("Wave Simulator - %s[*]" % basename(self.filename))
         else:
             self.setWindowTitle("Wave Simulator[*]")
         self.setWindowModified(self.dirty)
@@ -880,12 +1025,13 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
         if recentFiles:
             self.fileMenu.addSeparator()
             for i, fname in enumerate(recentFiles):
-                action = QtGui.QAction(QtGui.QIcon(":/icon.png"),
-                                       "&{} {}".format(i + 1, QtCore.QFileInfo(
-                                           fname).fileName()), self)
+                action = QtGui.QAction(
+                    QtGui.QIcon(":/icon.png"),
+                    "&{} {}".format(i + 1, QtCore.QFileInfo(fname).fileName()),
+                    self,
+                )
                 action.setData(fname)
-                self.connect(action, QtCore.SIGNAL("triggered()"),
-                             self.loadFile)
+                self.connect(action, QtCore.SIGNAL("triggered()"), self.loadFile)
                 self.fileMenu.addAction(action)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.fileMenuActions[-1])
@@ -922,31 +1068,67 @@ def parse_the_command_line_arguments(__version__):
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # parse the command line to set some options2
     # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    parser = argparse.ArgumentParser(description='Sequence tool for waiting on weather analyzes',
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(
+        description="Sequence tool for waiting on weather analyzes",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
 
     # set the verbosity level command line arguments
-    parser.add_argument('-d', '--debug', help="Print lots of debugging statements",
-                        action="store_const", dest="log_level", const=logging.DEBUG,
-                        default=logging.INFO)
-    parser.add_argument('-v', '--verbose', help="Be verbose", action="store_const",
-                        dest="log_level",
-                        const=logging.INFO)
-    parser.add_argument('-q', '--quiet', help="Be quiet: no output", action="store_const",
-                        dest="log_level",
-                        const=logging.WARNING)
-    parser.add_argument("--write_log_to_file", action="store_true",
-                        help="Write the logging information to file")
-    parser.add_argument("--log_file_base", default="log", help="Default name of the logging output")
-    parser.add_argument('--log_file_debug', help="Print lots of debugging statements to file",
-                        action="store_const", dest="log_level_file", const=logging.DEBUG,
-                        default=logging.INFO)
-    parser.add_argument('--log_file_verbose', help="Be verbose to file", action="store_const",
-                        dest="log_level_file",
-                        const=logging.INFO)
-    parser.add_argument('--log_file_quiet', help="Be quiet: no output to file",
-                        action="store_const",
-                        dest="log_level_file", const=logging.WARNING)
+    parser.add_argument(
+        "-d",
+        "--debug",
+        help="Print lots of debugging statements",
+        action="store_const",
+        dest="log_level",
+        const=logging.DEBUG,
+        default=logging.INFO,
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Be verbose",
+        action="store_const",
+        dest="log_level",
+        const=logging.INFO,
+    )
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        help="Be quiet: no output",
+        action="store_const",
+        dest="log_level",
+        const=logging.WARNING,
+    )
+    parser.add_argument(
+        "--write_log_to_file",
+        action="store_true",
+        help="Write the logging information to file",
+    )
+    parser.add_argument(
+        "--log_file_base", default="log", help="Default name of the logging output"
+    )
+    parser.add_argument(
+        "--log_file_debug",
+        help="Print lots of debugging statements to file",
+        action="store_const",
+        dest="log_level_file",
+        const=logging.DEBUG,
+        default=logging.INFO,
+    )
+    parser.add_argument(
+        "--log_file_verbose",
+        help="Be verbose to file",
+        action="store_const",
+        dest="log_level_file",
+        const=logging.INFO,
+    )
+    parser.add_argument(
+        "--log_file_quiet",
+        help="Be quiet: no output to file",
+        action="store_const",
+        dest="log_level_file",
+        const=logging.WARNING,
+    )
     # parse the command line
     args = parser.parse_args()
 
@@ -962,11 +1144,14 @@ if __name__ == "__main__":
         # http://stackoverflow.com/questions/29087297/
         # is-there-a-way-to-change-the-filemode-for-a-logger-object-that-is-not-configured
         log_file_base = args.log_file_base
-        sys.stderr = open(log_file_base + ".err", 'w')
+        sys.stderr = open(log_file_base + ".err", "w")
     else:
         log_file_base = None
 
-    logger = create_logger(file_log_level=args.log_level_file, console_log_level=args.log_level,
-                           log_file=log_file_base)
+    logger = create_logger(
+        file_log_level=args.log_level_file,
+        console_log_level=args.log_level,
+        log_file=log_file_base,
+    )
 
     main()

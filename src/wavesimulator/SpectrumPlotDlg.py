@@ -3,7 +3,8 @@ import sys
 
 import numpy as np
 import pyqtgraph as pg
-from PyQt4 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, uic, QtWidgets
+from PyQt5.Qt import QMainWindow, QApplication
 
 
 class SpectrumPlotDlg(QtGui.QDialog):

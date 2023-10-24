@@ -11,3 +11,5 @@ pytest
 scipy
 setuptools
 Sphinx
+
+python-dateutil
