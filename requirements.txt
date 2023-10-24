@@ -5,7 +5,7 @@ mpltools
 numpy
 pandas
 pymarine
-PyQt4
+pyqt=5
 pyqtgraph
 pytest
 scipy
