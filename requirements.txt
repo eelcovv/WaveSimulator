@@ -1,0 +1,12 @@
+h5py
+importlib_metadata
+matplotlib
+mpltools
+numpy
+pandas
+PyQt4
+pyqtgraph
+pytest
+scipy
+setuptools
+Sphinx
