@@ -3,13 +3,13 @@ import datetime
 import errno
 import logging
 import os
+import pathlib
 import re
 import subprocess
 import sys
 from time import strptime
-import pathlib
-import dateutil.parser as dparser
 
+import dateutil.parser as dparser
 import numpy as np
 import pandas as pd
 
@@ -182,13 +182,13 @@ def clear_path(path_name):
 
 
 def create_logger(
-    log_file=None,
-    console_log_level=logging.INFO,
-    console_log_format_long=False,
-    console_log_format_clean=False,
-    file_log_level=logging.INFO,
-    file_log_format_long=True,
-    redirect_stderr=True,
+        log_file=None,
+        console_log_level=logging.INFO,
+        console_log_format_long=False,
+        console_log_format_clean=False,
+        file_log_level=logging.INFO,
+        file_log_format_long=True,
+        redirect_stderr=True,
 ):
     """Create a console logger
 
@@ -453,7 +453,7 @@ def get_column_with_max_cumulative_value(data, regular_expression=".*"):
         if re.match(regular_expression, col):
             columns.append(col)
     if columns:
-        name_of_maximum_column = data.fillna(0).sum()[columns[0] : columns[-1]].idxmax()
+        name_of_maximum_column = data.fillna(0).sum()[columns[0]: columns[-1]].idxmax()
     else:
         name_of_maximum_column = None
 
@@ -461,13 +461,13 @@ def get_column_with_max_cumulative_value(data, regular_expression=".*"):
 
 
 def print_banner(
-    title,
-    top_symbol="-",
-    bottom_symbol=None,
-    side_symbol=None,
-    width=80,
-    to_stdout=False,
-    no_top_and_bottom=False,
+        title,
+        top_symbol="-",
+        bottom_symbol=None,
+        side_symbol=None,
+        width=80,
+        to_stdout=False,
+        no_top_and_bottom=False,
 ):
     """Create a banner for plotting a bigger title above each section in the log output
 
@@ -523,20 +523,20 @@ def print_banner(
 
     if not no_top_and_bottom:
         message_string = (
-            "{}\n"
-            + "{} ".format(side_symbol)
-            + "{:"
-            + "{:d}".format(width - 4)
-            + "}"
-            + " {}".format(side_symbol)
-            + "\n{}"
+                "{}\n"
+                + "{} ".format(side_symbol)
+                + "{:"
+                + "{:d}".format(width - 4)
+                + "}"
+                + " {}".format(side_symbol)
+                + "\n{}"
         )
         message = message_string.format(
             top_symbol * width, title, bottom_symbol * width
         )
     else:
         message_string = (
-            "{} ".format(side_symbol) + "{:" + "{:d}".format(width - 4) + "}"
+                "{} ".format(side_symbol) + "{:" + "{:d}".format(width - 4) + "}"
         )
         message = message_string.format(title)
     if to_stdout:
@@ -955,20 +955,20 @@ def get_path_depth(path_name):
 
 
 def scan_base_directory(
-    walk_dir=".",
-    supplied_file_list=None,
-    file_has_string_pattern="",
-    file_has_not_string_pattern="",
-    dir_has_string_pattern="",
-    dir_has_not_string_pattern="",
-    start_date_time=None,
-    end_date_time=None,
-    time_zone=None,
-    time_stamp_year_first=True,
-    time_stamp_day_first=False,
-    extension=None,
-    max_depth=None,
-    sort_file_base_names=False,
+        walk_dir=".",
+        supplied_file_list=None,
+        file_has_string_pattern="",
+        file_has_not_string_pattern="",
+        dir_has_string_pattern="",
+        dir_has_not_string_pattern="",
+        start_date_time=None,
+        end_date_time=None,
+        time_zone=None,
+        time_stamp_year_first=True,
+        time_stamp_day_first=False,
+        extension=None,
+        max_depth=None,
+        sort_file_base_names=False,
 ):
     """Recursively scan the directory `walk_dir` and get all files underneath obeying the search
     strings and/or date/time ranges
@@ -1150,7 +1150,7 @@ def scan_base_directory(
                         add_file = False
 
                 if add_file and (
-                    start_date_time is not None or end_date_time is not None
+                        start_date_time is not None or end_date_time is not None
                 ):
                     # we have supplied a start time or a end time. See if we can get a date time
                     # from the file name
@@ -1356,7 +1356,7 @@ def query_yes_no(question, default_answer="no"):
 
 
 def get_time_stamp_from_string(
-    string_with_date_time, yearfirst=True, dayfirst=False, timezone=None
+        string_with_date_time, yearfirst=True, dayfirst=False, timezone=None
 ):
     """
     Try to get a date/time stamp from a string

@@ -1,10 +1,9 @@
 import logging
-import sys
 
 import numpy as np
 import pyqtgraph as pg
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import (QDialog, QDialogButtonBox, QRadioButton, QCheckBox, QGridLayout)
-from PyQt5.QtGui import QGuiApplication
 
 
 class SpectrumPlotDlg(QDialog):
@@ -46,18 +45,15 @@ class SpectrumPlotDlg(QDialog):
             self.checkBox_wavelines.append(QCheckBox())
             self.checkBox_wavelines[-1].setText("Plot Wave {}".format(i + 1))
             self.checkBox_wavelines[-1].setChecked(True)
-            self.connect(self.checkBox_wavelines[-1], QtCore.SIGNAL("toggled(bool)"),
-                         self.checkToggled)
+            self.checkBox_wavepoints[-1].toggled(self.checkToggled)
             self.checkBox_wavepoints.append(QCheckBox())
             self.checkBox_wavepoints[-1].setText("Add Scatter Points Wave {}".format(i + 1))
             self.checkBox_wavepoints[-1].setChecked(True)
-            self.connect(self.checkBox_wavepoints[-1], QtCore.SIGNAL("toggled(bool)"),
-                         self.checkToggled)
+            self.checkBox_wavepoints[-1].toggled(self.checkToggled)
             self.checkBox_triangles.append(QCheckBox())
             self.checkBox_triangles[-1].setText("Add Triangles at key points {}".format(i + 1))
             self.checkBox_triangles[-1].setChecked(True)
-            self.connect(self.checkBox_triangles[-1], QtCore.SIGNAL("toggled(bool)"),
-                         self.checkToggled)
+            self.checkBox_triangles[-1].toggled(self.checkToggled)
 
         # stack = QStackedWidget()
 
@@ -83,7 +79,7 @@ class SpectrumPlotDlg(QDialog):
                 plot.setXLink('Modulus')
                 plot.setLabel('left', "Modulus", units='m^2 m')
                 plot.setLabel('bottom', "k", units='1/m')
-                # go the the next plot
+                # go to the next plot
                 self.view.nextRow()
             else:
                 plot.setXLink("Phase")
@@ -114,18 +110,15 @@ class SpectrumPlotDlg(QDialog):
 
         self.setLayout(grid)
 
-        # connect the buttons to the apply and close slots
+        # connect the buttons to the applied and close slots
 
-        self.connect(self.buttonBox, QtCore.SIGNAL("rejected()"),
-                     self, QtCore.SLOT("close()"))
+        self.buttonBox.rejected(self.buttonBox.close)
 
         for radiobutton in self.radiobuttons:
-            self.connect(radiobutton, QtCore.SIGNAL("toggled(bool)"),
-                         self.radioToggled)
+            radiobutton.toggled(self.radioToggled)
 
         # set the dialog position and size based on the last open session
         settings = QtCore.QSettings()
-
 
         self.restoreGeometry(settings.value("SpectrumPlotDlg/Geometry",
                                             QtCore.QByteArray()))

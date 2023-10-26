@@ -1,18 +1,14 @@
-import sys
 import logging
-
-from PyQt5 import QtGui, QtCore, uic, QtWidgets
 import time as ptime
-from PyQt5.Qt import QMainWindow, QApplication
-import pyqtgraph as pg
-from numpy import std
-import pyqtgraph.opengl as gl
+
 import h5py
+import pyqtgraph.opengl as gl
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QCheckBox, QGridLayout
+from numpy import std
 
-from os.path import splitext
 
-
-class SurfacePlotDlg(QtGui.QDialog):
+class SurfacePlotDlg(QDialog):
     def __init__(self, waves, showSurfacePlot, parent=None):
         super(SurfacePlotDlg, self).__init__(parent)
 
@@ -20,31 +16,29 @@ class SurfacePlotDlg(QtGui.QDialog):
 
         self.showSurfacePlot = showSurfacePlot
 
-        # initialse the logger
+        # initialize the logger
         self.logger = logging.getLogger(__name__)
 
-        self.buttonBox = QtGui.QDialogButtonBox(QtGui.QDialogButtonBox.Close)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Close)
 
         self.view = gl.GLViewWidget()
         self.view.setWindowTitle("GLSurfacePlot of the 2D wave field")
         self.view.setCameraPosition(distance=500)
 
         self.image_base = "surface"
-        self.checkBox_saveToFile = QtGui.QCheckBox()
+        self.checkBox_saveToFile = QCheckBox()
         self.checkBox_saveToFile.setText(
             "Save frames to File {}".format(self.image_base)
         )
         self.checkBox_saveToFile.setChecked(False)
-        self.connect(
-            self.checkBox_saveToFile, QtCore.SIGNAL("toggled(bool)"), self.checkToggled
-        )
+        self.checkBox_saveToFile.toggled(self.checkToggled)
 
-        # initialise list of surface.
+        # initialize a list of surface.
         self.surfaces = []
         self.gridlines = None
 
         # create the plot screen and the buttons below it
-        grid = QtGui.QGridLayout()
+        grid = QGridLayout()
         grid.addWidget(self.view, 0, 0, 1, 5)
 
         grid.addWidget(self.buttonBox, 2, 4)
@@ -53,9 +47,7 @@ class SurfacePlotDlg(QtGui.QDialog):
 
         # connect the buttons to the apply and close slots
 
-        self.connect(
-            self.buttonBox, QtCore.SIGNAL("rejected()"), self, QtCore.SLOT("close()")
-        )
+        self.buttonBox.rejected(self.buttonBox.close)
 
         # set the dialog position and size based on the last open session
         settings = QtCore.QSettings()
@@ -152,7 +144,7 @@ class SurfacePlotDlg(QtGui.QDialog):
                         if wave.wave1D.t_index == 0:
                             # for the first time only, also dump the xy mesh into a separate file
                             with h5py.File(
-                                moviefilebase + "_wave{}_xy-mesh".format(i + 1), "w"
+                                    moviefilebase + "_wave{}_xy-mesh".format(i + 1), "w"
                             ) as hf:
                                 hf.create_dataset("X", data=wave.xy_mesh[0])
                                 hf.create_dataset("Y", data=wave.xy_mesh[1])

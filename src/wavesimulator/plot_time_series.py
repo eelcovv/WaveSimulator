@@ -1,9 +1,10 @@
 import os
 import sys
-from wavesimulator.utils import (print_banner,  clean_up_plot, clear_argument_list,
-                                     valid_date, my_colors, get_logger, analyse_annotations,
-                                     move_script_path_to_back_of_search_path)
-from pymarine.waves.wave_spectra import (spectrum_jonswap, d_omega_e_prime, omega_vs_omega_e, omega_e_vs_omega)
+
+from pymarine.waves.wave_spectra import (spectrum_jonswap, d_omega_e_prime, omega_e_vs_omega)
+
+from wavesimulator.utils import (clear_argument_list,
+                                 get_logger, move_script_path_to_back_of_search_path)
 
 # remove the script path from the path to avoid messing up the __version
 move_script_path_to_back_of_search_path(__file__)
@@ -19,11 +20,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-from mpltools import color
-from datetime import datetime
-from time import strftime
 from matplotlib import rcParams
-import re
 import argparse
 import logging
 
@@ -40,6 +37,7 @@ def max_value_from_dict(the_dict):
 
     return max_key, max_value
 
+
 def parse_arguments():
     # clean the arguments list given on the command line in case you run from cygwin
     sys.argv = clear_argument_list(sys.argv)
@@ -49,7 +47,8 @@ def parse_arguments():
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-d', '--debug', help="Print lots of debugging statements", action="store_const",
                         dest="log_level", const=logging.DEBUG, default=logging.INFO)
-    parser.add_argument('-v', '--verbose', help="Be verbose", action="store_const", dest="log_level", const=logging.INFO,
+    parser.add_argument('-v', '--verbose', help="Be verbose", action="store_const", dest="log_level",
+                        const=logging.INFO,
                         default=logging.INFO)
     parser.add_argument('-q', '--quiet', help="Be quiet: no output", action="store_const", dest="log_level",
                         const=logging.WARNING, default=logging.INFO)
@@ -70,7 +69,6 @@ def parse_arguments():
 
 
 def main():
-
     args, parser = parse_arguments()
 
     # -----------------------------------------------------------------------
@@ -174,7 +172,7 @@ def main():
         freq, psd = signal.welch(db[name], ff, nfft=args.nfft, window="hanning")
 
         # express psd in omega
-        psd_vs_omega  = psd / (2 * np.pi)
+        psd_vs_omega = psd / (2 * np.pi)
 
         freq_omega = 2 * pi * freq
 
@@ -191,10 +189,11 @@ def main():
         js_spec_vs_omega = spectrum_jonswap(freq_omega, Hs=3, Tp=10)
 
         d_omega_E_d_omega = d_omega_e_prime(freq_omega, u_mon)
-        #d_omega_E_d_omega_e = omega_e_vs_omega(d_omega_E_d_omega, u_mon)
+        # d_omega_E_d_omega_e = omega_e_vs_omega(d_omega_E_d_omega, u_mon)
         tiny = np.exp(-53)
         omega_e = omega_e_vs_omega(freq_omega, u_mon)
-        d_omega_E_d_omega = np.where(abs(d_omega_E_d_omega) < tiny, np.sign(d_omega_E_d_omega) * tiny, d_omega_E_d_omega)
+        d_omega_E_d_omega = np.where(abs(d_omega_E_d_omega) < tiny, np.sign(d_omega_E_d_omega) * tiny,
+                                     d_omega_E_d_omega)
 
         js_spec_prime_vs_omega_e = js_spec_vs_omega / abs(d_omega_E_d_omega)
 
@@ -209,14 +208,14 @@ def main():
 
         # two solutions of omega from omega_e
         omega_one = omega_critical * (1 - np.sqrt(2 * omega_e / omega_critical))
-        omega_one_e = omega_e_vs_omega(omega_one, u_mon) # + omega_critical_e
+        omega_one_e = omega_e_vs_omega(omega_one, u_mon)  # + omega_critical_e
         omega_two = omega_critical * (1 + np.sqrt(2 * omega_e / omega_critical))
-        omega_two_e = omega_e_vs_omega(omega_two, u_mon) # + omega_critical_e
+        omega_two_e = omega_e_vs_omega(omega_two, u_mon)  # + omega_critical_e
 
         js_spec_prime_vs_omega_one = np.where(d_omega_E_d_omega > 0, js_spec_prime_vs_omega_e, 0)
         js_spec_prime_vs_omega_two = np.where(d_omega_E_d_omega < 0, js_spec_prime_vs_omega_e, 0)
 
-        omega_e_swap = np.where(d_omega_E_d_omega > 0, omega_e, omega_critical-omega_e)
+        omega_e_swap = np.where(d_omega_E_d_omega > 0, omega_e, omega_critical - omega_e)
         swap_index_list = np.where(np.diff(np.sign(d_omega_E_d_omega)))[0]
         if swap_index_list:
             index_critical = swap_index_list[0]
@@ -235,9 +234,9 @@ def main():
             # to the starting of the array. There are two options: either n_part_1 > n_part_2, and n_part_1<n_part_2
             # both case should work
 
-            n_part_1 = index_critical # number of point up to index_critical (with including the index at index_critical)
-            i_end_swap = min(index_critical + n_part_1 - 1, n_js_size - 1) # the end index of the swapped part
-            n_part_2 = i_end_swap - index_critical # the number of point in the second part
+            n_part_1 = index_critical  # number of point up to index_critical (with including the index at index_critical)
+            i_end_swap = min(index_critical + n_part_1 - 1, n_js_size - 1)  # the end index of the swapped part
+            n_part_2 = i_end_swap - index_critical  # the number of point in the second part
             i_start_swap = max(0, index_critical - n_part_2)  # the index starting at the first part
 
             log.debug("n_js {}  n_st {} n_end {} n1 {} n2 {} : {}".format(n_js_size, i_start_swap, i_end_swap, n_part_1,
@@ -259,53 +258,53 @@ def main():
         d_freq3 = np.append(d_freq3, np.array([d_freq3[-1]]))
         Hs3 = 4 * np.sqrt(np.nansum(js_spec_prime_vs_omega_e * d_freq3))
 
-        #cum_sum_energy_miss = abs(np.nan_to_num(js_spec_prime_vs_omega_e) * d_freq3).cumsum()
+        # cum_sum_energy_miss = abs(np.nan_to_num(js_spec_prime_vs_omega_e) * d_freq3).cumsum()
         cum_sum_energy = abs(np.nan_to_num(js_spec_prime_vs_omega_e_folded) * abs(d_freq3)).cumsum()
-        #omega_e_new = np.linspace(0, freq_omega[-1], 100, endpoint=True)
+        # omega_e_new = np.linspace(0, freq_omega[-1], 100, endpoint=True)
         omega_e_new = freq_omega
         d_omega_e_new = np.diff(omega_e_new)[0]
 
         f_inter = interp1d(omega_e_swap, cum_sum_energy, bounds_error=False, fill_value="extrapolate")
         cum_sum_energy_new = np.nan_to_num(f_inter(omega_e_new))
 
-        #f_inter = interp1d(omega_e_swap, cum_sum_energy_miss, bounds_error=False, fill_value=0)
-        #cum_sum_energy_new_miss = f_inter(omega_e_new)
+        # f_inter = interp1d(omega_e_swap, cum_sum_energy_miss, bounds_error=False, fill_value=0)
+        # cum_sum_energy_new_miss = f_inter(omega_e_new)
 
         js_tmp = np.diff(cum_sum_energy_new) / d_omega_e_new
         js_spec_prime_vs_omega_e_int = np.append(js_tmp, np.array([js_tmp[-1]]))
 
         # to try the non-folded version: no difference
-        #js_spec_prime_vs_omega_e_int_miss = np.diff(cum_sum_energy_new_miss) / d_omega_e_new
-        #js_spec_prime_vs_omega_e_int_miss = np.append(js_spec_prime_vs_omega_e_int_miss, np.array([js_spec_prime_vs_omega_e_int_miss[-1]]))
+        # js_spec_prime_vs_omega_e_int_miss = np.diff(cum_sum_energy_new_miss) / d_omega_e_new
+        # js_spec_prime_vs_omega_e_int_miss = np.append(js_spec_prime_vs_omega_e_int_miss, np.array([js_spec_prime_vs_omega_e_int_miss[-1]]))
 
         Hs4 = 4 * np.sqrt((js_spec_prime_vs_omega_e_int * d_omega_e_new).sum())
-        log.debug("hier Hs/4 and last {} {}".format(np.power(Hs4/4., 2), js_spec_prime_vs_omega_e_int.max()))
+        log.debug("hier Hs/4 and last {} {}".format(np.power(Hs4 / 4., 2), js_spec_prime_vs_omega_e_int.max()))
 
         axes[1][-1].text(0.1, 1.02,
-                         u"Hs$_{JS}$=" + "{:.2f} m".format(Hs1) + u"  Hs$_{Meas}$=" + "{: .2f} / {:.2f}".format(Hs2, Hs4),
+                         u"Hs$_{JS}$=" + "{:.2f} m".format(Hs1) + u"  Hs$_{Meas}$=" + "{: .2f} / {:.2f}".format(Hs2,
+                                                                                                                Hs4),
                          transform=axes[1][-1].transAxes, fontdict=dict(size=10))
 
         axes[1][-1].plot(freq_omega, psd_vs_omega, "-r", label="Measured")
         axes[1][-1].plot(freq_omega, js_spec_vs_omega, '-g', label="Jonswap")
-        #axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_e, '-b', label="Jonswap_E1")
-        #axes[1][-1].plot(omega_e_swap, js_spec_prime_vs_omega_e_clipped, '--c', label="Jonswap_E2", linewidth=3)
+        # axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_e, '-b', label="Jonswap_E1")
+        # axes[1][-1].plot(omega_e_swap, js_spec_prime_vs_omega_e_clipped, '--c', label="Jonswap_E2", linewidth=3)
         axes[1][-1].plot(omega_e_new, js_spec_prime_vs_omega_e_int, '-b', label="Jonswap_E2", linewidth=2)
-        #axes[1][-1].plot(omega_e_new, js_spec_prime_vs_omega_e_int_miss, '--y', label="Jonswap_E2", linewidth=2)
-        #axes[1][-1].plot(omega_e_swap, cum_sum_energy, '-oc', label="cumsum1", linewidth=2)
-        #axes[1][-1].plot(omega_e_new, cum_sum_energy_new, '-oy', label="cumsum2", linewidth=2)
-        #axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_e_folded, '--c', label="Jonswap_Folded")
-        #axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_e_clipped, '--k', label="Jonswap_clipped")
-        #axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_e_1, '-b', label="Jonswap_E1")
-        #axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_e_2, '-c', label="Jonswap_E2")
+        # axes[1][-1].plot(omega_e_new, js_spec_prime_vs_omega_e_int_miss, '--y', label="Jonswap_E2", linewidth=2)
+        # axes[1][-1].plot(omega_e_swap, cum_sum_energy, '-oc', label="cumsum1", linewidth=2)
+        # axes[1][-1].plot(omega_e_new, cum_sum_energy_new, '-oy', label="cumsum2", linewidth=2)
+        # axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_e_folded, '--c', label="Jonswap_Folded")
+        # axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_e_clipped, '--k', label="Jonswap_clipped")
+        # axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_e_1, '-b', label="Jonswap_E1")
+        # axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_e_2, '-c', label="Jonswap_E2")
 
-
-        #axes[1][-1].plot(omega_two_e , js_spec_prime_vs_omega_two, '--c', label="Jonswap_E1 ")
-        #axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_two, '--k', label="Jonswap_E1 ")
-        #axes[1][-1].plot(omega_one_e, js_spec_prime_vs_omega_two, '--y', label="Jonswap_E1 ")
-        #axes[1][-1].plot(freq_omega, omega_e, '--k', label="omega_e ")
-        #axes[1][-1].plot(freq_omega, omega_e_swap, '--y', label="omega_e ")
-        #axes[1][-1].plot([omega_critical_e, omega_critical_e], [0, 100], '--k')
-        #axes[1][-1].plot([omega_phase_e, omega_phase_e], [0, 100], '--y')
+        # axes[1][-1].plot(omega_two_e , js_spec_prime_vs_omega_two, '--c', label="Jonswap_E1 ")
+        # axes[1][-1].plot(omega_e, js_spec_prime_vs_omega_two, '--k', label="Jonswap_E1 ")
+        # axes[1][-1].plot(omega_one_e, js_spec_prime_vs_omega_two, '--y', label="Jonswap_E1 ")
+        # axes[1][-1].plot(freq_omega, omega_e, '--k', label="omega_e ")
+        # axes[1][-1].plot(freq_omega, omega_e_swap, '--y', label="omega_e ")
+        # axes[1][-1].plot([omega_critical_e, omega_critical_e], [0, 100], '--k')
+        # axes[1][-1].plot([omega_phase_e, omega_phase_e], [0, 100], '--y')
         # axes[1][-1].plot(omega_two, abs(js_spec_prime_vs_omega_e), '--y', label="Jonswap_E 2")
 
         if args.use_log:

@@ -7,6 +7,8 @@ from os.path import basename, dirname, splitext
 from re import search, sub
 
 import pandas as pd
+# import the wave modules
+import pymarine.waves.wave_fields as wf
 import pyqtgraph as pg
 import pyqtgraph.exporters
 from numpy import radians, linspace, mod, full, nan, zeros, where, array
@@ -17,28 +19,24 @@ from scipy import interpolate
 # import the dialog for the spectra
 import SpectrumPlotDlg
 import SurfacePlotDlg
-
-# import the wave modules
-import pymarine.waves.wave_fields as wf
-
 # import all the icons images (should be generated with
 # pyrcc4 -py3 -o resources.py resources.qrc
 # where resource.qrc is an xml file containing a list with the aliases
 import resources
-
+# import the parameter tree
+from parameters import JSParameters
 # import module for logging
 # initiales my logging settings
 from wavesimulator.utils import create_logger, clear_argument_list, get_logger
 from wavesimulator.utils import get_parameter_list_key
-
-# import the parameter tree
-from parameters import JSParameters
 
 # version control to be set up later
 __version__ = 0.1
 res_file = (
     resources.__file__
 )  # this line is only to prevent the import resources statement to be
+
+
 # removed by PyCharm
 
 
@@ -747,14 +745,14 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
                 target.addAction(action)
 
     def createAction(
-        self,
-        text,
-        slot=None,
-        shortcut=None,
-        icon=None,
-        tip=None,
-        checkable=False,
-        signal="triggered()",
+            self,
+            text,
+            slot=None,
+            shortcut=None,
+            icon=None,
+            tip=None,
+            checkable=False,
+            signal="triggered()",
     ):
         action = QtGui.QAction(text, self)
         if icon is not None:
