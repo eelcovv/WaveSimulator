@@ -378,7 +378,7 @@ class WaveParameters(pTypes.GroupParameter):
                            tip="Add Scatter Points at the node locations"))
         self.addChild(dict(name='Line Width', type='int', value=1, step=1, limits=(0, 10)))
         self.addChild(
-            dict(name='Color', type='color', value="FFFFFF",
+            dict(name='Color', type='color', value="#FFFFFF",
                  tip="Choose the color of line plot of this wave"))
         self.scatter_points = self.param('Scatter Points')
         self.update_and_show = self.param('Update and Show')
@@ -387,7 +387,7 @@ class WaveParameters(pTypes.GroupParameter):
         self.color = self.param('Color')
         self.width = self.param('Line Width')
 
-        # this are the solver settings
+        # these are the solver settings
 
         self.addChild(
             dict(name='Wave Construction', type='list',
@@ -531,7 +531,7 @@ class JSParameters(object):
             self.logger.debug("  change:    {}".format(change))
             self.logger.debug("  data:      {}".format(str(data)))
             self.logger.debug("  ----------")
-        self.Parameters.emit(QtCore.SIGNAL("tree_parameter_changed"), childName)
+        self.Parameters.emitTreeChanges()
 
     def save(self):
         self.state = self.Parameters.saveState()

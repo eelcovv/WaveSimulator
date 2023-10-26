@@ -45,15 +45,18 @@ class SpectrumPlotDlg(QDialog):
             self.checkBox_wavelines.append(QCheckBox())
             self.checkBox_wavelines[-1].setText("Plot Wave {}".format(i + 1))
             self.checkBox_wavelines[-1].setChecked(True)
-            self.checkBox_wavepoints[-1].toggled(self.checkToggled)
             self.checkBox_wavepoints.append(QCheckBox())
+            try:
+                self.checkBox_wavepoints[-1].toggled.connect(self.checkToggled)
+            except IndexError as err:
+                pass
             self.checkBox_wavepoints[-1].setText("Add Scatter Points Wave {}".format(i + 1))
             self.checkBox_wavepoints[-1].setChecked(True)
-            self.checkBox_wavepoints[-1].toggled(self.checkToggled)
+            self.checkBox_wavepoints[-1].toggled.connect(self.checkToggled)
             self.checkBox_triangles.append(QCheckBox())
             self.checkBox_triangles[-1].setText("Add Triangles at key points {}".format(i + 1))
             self.checkBox_triangles[-1].setChecked(True)
-            self.checkBox_triangles[-1].toggled(self.checkToggled)
+            self.checkBox_triangles[-1].toggled.connect(self.checkToggled)
 
         # stack = QStackedWidget()
 
@@ -112,10 +115,10 @@ class SpectrumPlotDlg(QDialog):
 
         # connect the buttons to the applied and close slots
 
-        self.buttonBox.rejected(self.buttonBox.close)
+        self.buttonBox.rejected.connect(self.buttonBox.close)
 
         for radiobutton in self.radiobuttons:
-            radiobutton.toggled(self.radioToggled)
+            radiobutton.toggled.connect(self.radioToggled)
 
         # set the dialog position and size based on the last open session
         settings = QtCore.QSettings()
@@ -126,7 +129,10 @@ class SpectrumPlotDlg(QDialog):
         self.setWindowTitle("Spectrum Plots")
 
     def checkToggled(self, flag):
-        self.updatePlots()
+        try:
+            self.updatePlots()
+        except AttributeError as err:
+            self.logger.debug(err)
 
     def radioToggled(self, set):
 

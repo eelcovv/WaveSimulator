@@ -11,6 +11,9 @@ import pandas as pd
 import pymarine.waves.wave_fields as wf
 import pyqtgraph as pg
 import pyqtgraph.exporters
+from PyQt5.QtCore import QSettings, QByteArray, QTimer
+from PyQt5.QtGui import QKeySequence, QIcon
+from PyQt5.QtWidgets import QMainWindow, QGridLayout, QWidget, QAction, QSplitter, QLabel, QFrame, QApplication
 from numpy import radians, linspace, mod, full, nan, zeros, where, array
 from pyqtgraph.Qt import QtCore, QtGui
 from pyqtgraph.parametertree import ParameterTree
@@ -40,10 +43,10 @@ res_file = (
 # removed by PyCharm
 
 
-class WaveSimulatorGUI(QtGui.QMainWindow):
+class WaveSimulatorGUI(QMainWindow):
     # @profile
     def __init__(self, parent=None):
-        super(WaveSimulatorGUI, self).__init__(parent)
+        super().__init__(parent=parent)
 
         self.logger = get_logger(__name__)
         self.logger.info("Start Jonswap time example")
@@ -102,23 +105,19 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             self.waves2D, self.showSurfacePlot, self.moviefilebase
         )
 
-        self.connect(
-            self.pars.Parameters,
-            QtCore.SIGNAL("tree_parameter_changed"),
-            self.transfer_parameters,
-        )
+        # self.pars.Parameters.tree_parameter_changed(self.transfer_parameters)
 
-        settings = QtCore.QSettings()
+        settings = QSettings()
         self.recentFiles = settings.value("RecentFiles") or []
 
         self.restoreGeometry(
-            settings.value("WaveSimulatorMainWindow/Geometry", QtCore.QByteArray())
+            settings.value("WaveSimulatorMainWindow/Geometry", QByteArray())
         )
 
         self.setWindowTitle("Wave Simulator")
 
         with pg.BusyCursor():
-            QtCore.QTimer.singleShot(0, self.loadInitialFile)
+            QTimer.singleShot(0, self.loadInitialFile)
 
     # @profile
     def transfer_parameters(self, parameter=None):
@@ -342,7 +341,7 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             self.updatePlots()
 
             # wait until the plot is drawn, otherwise the gui is blocked
-            QtGui.QApplication.processEvents()
+            QApplication.processEvents()
 
     def CloseSpectrumPlot(self):
         self.spectrumPlotDialog = None
@@ -384,10 +383,10 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
     def setupGUI(self):
         # this layout is required to put in the central widget
-        self.layout = QtGui.QGridLayout()
+        self.layout = QGridLayout()
         self.layout.setContentsMargins(0, 0, 0, 0)
 
-        self.centralwidget = QtGui.QWidget()
+        self.centralwidget = QWidget()
         self.setCentralWidget(self.centralwidget)
         self.centralwidget.setLayout(self.layout)
 
@@ -395,21 +394,21 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
         fileOpenAction = self.createAction(
             "&Open...",
             self.fileOpen,
-            QtGui.QKeySequence.Open,
+            QKeySequence.Open,
             "fileopen",
             "Open an existing image file",
         )
         fileSaveAction = self.createAction(
             "&Save",
             self.fileSave,
-            QtGui.QKeySequence.Save,
+            QKeySequence.Save,
             "filesave",
             "Save the image",
         )
         fileSaveAsAction = self.createAction(
             "Save &As...",
             self.fileSaveAs,
-            QtGui.QKeySequence.SaveAs,
+            QKeySequence.SaveAs,
             icon="filesaveas",
             tip="Save the image using a new name",
         )
@@ -433,23 +432,24 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
         # the tool bar actions
         self.playMovieAction = self.createAction(
-            "&Play",
-            self.startMovie,
-            "Ctrl+P",
-            "play",
-            "Play the movie",
-            True,
-            "toggled(bool)",
+            text="&Play",
+            slot=self.startMovie,
+            shortcut="Ctrl+P",
+            icon="play",
+            tip="Play the movie",
+            checkable=True,
+            signal="toggled",
+            disabled=False
         )
 
         self.stopMovieAction = self.createAction(
-            "&Stop",
-            self.stopMovie,
-            "Ctrl+S",
-            "stop",
-            "Stop the movie",
-            True,
-            "toggled(bool)",
+            text="&Stop",
+            slot=self.stopMovie,
+            shortcut="Ctrl+S",
+            icon="stop",
+            tip="Stop the movie",
+            checkable=True,
+            signal="toggled",
         )
 
         self.pauseMovieAction = self.createAction(
@@ -459,7 +459,7 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             "pause",
             "Pause the movie",
             True,
-            "toggled(bool)",
+            "toggled",
         )
 
         self.loopMovieAction = self.createAction(
@@ -469,7 +469,7 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             "loop",
             "Play movie in a loop",
             True,
-            "toggled(bool)",
+            "toggled",
         )
 
         self.showSpectraPlot = self.createAction(
@@ -479,7 +479,7 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             "plots",
             "Show the spectra",
             True,
-            "toggled(bool)",
+            "toggled",
         )
 
         self.showSurfacePlot = self.createAction(
@@ -489,7 +489,7 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             "surface",
             "Show the 2D surface",
             True,
-            "toggled(bool)",
+            "toggled",
         )
 
         # create the file tool bar
@@ -528,7 +528,7 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             moveSaveAction,
             fileQuitAction,
         )
-        self.connect(self.fileMenu, QtCore.SIGNAL("aboutToShow()"), self.updateFileMenu)
+        self.fileMenu.aboutToShow.connect(self.updateFileMenu)
 
         # create the control menu
         self.controlMenu = self.menuBar().addMenu("&Control")
@@ -550,7 +550,7 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
         # (stacked on top of each other) at the right
 
         # start with a horizontal splitter dividing the central widget in two parts: left and right
-        self.splitter = QtGui.QSplitter()
+        self.splitter = QSplitter()
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
         self.layout.addWidget(self.splitter)
 
@@ -560,11 +560,11 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
 
         # create a new splitter dividing the top and bottom in two and add that to the right side of
         #  the first splitter
-        self.splitter2 = QtGui.QSplitter()
+        self.splitter2 = QSplitter()
         self.splitter2.setOrientation(QtCore.Qt.Vertical)
         self.splitter.addWidget(self.splitter2)
 
-        # add a the first graph and add it to the top of splitter2
+        # add the first graph and add it to the top of splitter2
         self.views = []
         self.plots = []
         self.legends = []
@@ -596,8 +596,8 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             self.splitter2.addWidget(self.views[-1])
 
         # activate the status bar
-        self.sizeLabel = QtGui.QLabel()
-        self.sizeLabel.setFrameStyle(QtGui.QFrame.StyledPanel | QtGui.QFrame.Sunken)
+        self.sizeLabel = QLabel()
+        self.sizeLabel.setFrameStyle(QFrame.StyledPanel | QFrame.Sunken)
         self.statusbar = self.statusBar()
         self.statusbar.setSizeGripEnabled(False)
         self.statusbar.addPermanentWidget(self.sizeLabel)
@@ -744,28 +744,59 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             else:
                 target.addAction(action)
 
-    def createAction(
-            self,
-            text,
-            slot=None,
-            shortcut=None,
-            icon=None,
-            tip=None,
-            checkable=False,
-            signal="triggered()",
-    ):
-        action = QtGui.QAction(text, self)
+    def createAction(self,
+                     text=None,
+                     slot=None,
+                     shortcut=None,
+                     icon=None,
+                     tip=None,
+                     checkable=False,
+                     signal="triggered",
+                     disabled=False):
+        """
+        Create a connection between a slot and a signal
+
+        Parameters
+        ----------
+        text: str, optional
+            Text to display in the  menu
+        slot:  object, optional
+            Slot to connect to the button
+        shortcut: object, optional, str
+            Shortcut key sequence
+        icon: object, optional
+            image to show
+        tip: str, optional
+            String to pop up when hoovering above the button
+        checkable: bool, optional
+            If true this button can be kept checked
+        signal: object, optional
+            signal to connect to the slot
+        disabled: bool, optional
+            If true, gray out button to disable it
+
+        Returns
+        -------
+
+        object:
+            action
+
+        """
+
+        action = QAction(text, self)
         if icon is not None:
-            action.setIcon(QtGui.QIcon(":/{}.png".format(icon)))
+            action.setIcon(QIcon(":/{}.png".format(icon)))
         if shortcut is not None:
             action.setShortcut(shortcut)
         if tip is not None:
             action.setToolTip(tip)
             action.setStatusTip(tip)
         if slot is not None:
-            self.connect(action, QtCore.SIGNAL(signal), slot)
+            getattr(action, signal).connect(slot)
         if checkable:
             action.setCheckable(True)
+        if disabled:
+            action.setEnabled(False)
         return action
 
     def closeEvent(self, event):
@@ -1024,12 +1055,12 @@ class WaveSimulatorGUI(QtGui.QMainWindow):
             self.fileMenu.addSeparator()
             for i, fname in enumerate(recentFiles):
                 action = QtGui.QAction(
-                    QtGui.QIcon(":/icon.png"),
+                    QIcon(":/icon.png"),
                     "&{} {}".format(i + 1, QtCore.QFileInfo(fname).fileName()),
                     self,
                 )
                 action.setData(fname)
-                self.connect(action, QtCore.SIGNAL("triggered()"), self.loadFile)
+                action.triggered.connect(self.loadFile())
                 self.fileMenu.addAction(action)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.fileMenuActions[-1])
@@ -1042,7 +1073,7 @@ def main():
     app.setOrganizationName("HMC Heerema Marine Contractors")
     app.setOrganizationDomain("hmc-heerema.com")
     app.setApplicationName("Wave Simulator")
-    app.setWindowIcon(QtGui.QIcon(":icon.png"))
+    app.setWindowIcon(QIcon(":icon.png"))
     win = WaveSimulatorGUI()
     win.setWindowTitle("Wave Simulator")
     win.resize(1100, 700)

@@ -31,7 +31,7 @@ class SurfacePlotDlg(QDialog):
             "Save frames to File {}".format(self.image_base)
         )
         self.checkBox_saveToFile.setChecked(False)
-        self.checkBox_saveToFile.toggled(self.checkToggled)
+        self.checkBox_saveToFile.toggled.connect(self.checkToggled)
 
         # initialize a list of surface.
         self.surfaces = []
@@ -47,7 +47,7 @@ class SurfacePlotDlg(QDialog):
 
         # connect the buttons to the apply and close slots
 
-        self.buttonBox.rejected(self.buttonBox.close)
+        self.buttonBox.rejected.connect(self.buttonBox.close)
 
         # set the dialog position and size based on the last open session
         settings = QtCore.QSettings()
