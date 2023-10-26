@@ -1,11 +1,8 @@
 h5py
 importlib_metadata
 matplotlib
-mpltools
 numpy
 pandas
-pymarine
-pyqt=5
 pyqtgraph
 pytest
 scipy
