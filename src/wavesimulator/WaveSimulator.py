@@ -44,7 +44,7 @@ res_file = (
 
 
 class WaveSimulatorGUI(QMainWindow):
-    # @profile
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -119,7 +119,6 @@ class WaveSimulatorGUI(QMainWindow):
         with pg.BusyCursor():
             QTimer.singleShot(0, self.loadInitialFile)
 
-    # @profile
     def transfer_parameters(self, parameter=None):
         """
         Method used to transfer the parameters from the pyqtgraph Parameters object to the
@@ -303,7 +302,6 @@ class WaveSimulatorGUI(QMainWindow):
         self.pauseMovieAction.setChecked(False)
         self.playMovie()
 
-    # @profile
     def playMovie(self):
         self.logger.debug("start playing movie at {:.2f}".format(self.waves1D[0].time))
 
@@ -603,7 +601,6 @@ class WaveSimulatorGUI(QMainWindow):
         self.statusbar.addPermanentWidget(self.sizeLabel)
         self.statusbar.showMessage("Ready", 5000)
 
-    # @profile
     def sample_at_monitors(self, jswave, i_wave=0):
         """
         sample at the monitor points
@@ -639,7 +636,6 @@ class WaveSimulatorGUI(QMainWindow):
 
             k_pos += 1
 
-    # @profile
     def plot_waves_vs_distance(self, plot):
         plot.setTitle(
             "Wave vs distance at time : {:.2f} s".format(self.waves1D[0].time)
@@ -690,7 +686,6 @@ class WaveSimulatorGUI(QMainWindow):
                             )
                         )
 
-    # @profile
     def updatePlots(self):
         self.clear_plots_and_legends()
 
@@ -724,7 +719,6 @@ class WaveSimulatorGUI(QMainWindow):
 
             self.surfacePlotDialog.updatePlots(self.moviefilebase)
 
-    # @profile
     def clear_plots_and_legends(self):
         # clear the plots
         for plot in self.plots:

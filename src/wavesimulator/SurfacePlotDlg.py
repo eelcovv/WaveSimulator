@@ -63,7 +63,7 @@ class SurfacePlotDlg(QDialog):
         if set:
             self.updatePlots()
 
-    # @profile
+    
     def initSurfaces(self):
         ## create a surface plot, tell it to use the 'heightColor' shader
         ## since this does not require normal vectors to render (thus we
@@ -108,7 +108,7 @@ class SurfacePlotDlg(QDialog):
             else:
                 self.surfaces.append(None)
 
-    # @profile
+    
     def updatePlots(self, moviefilebase=None):
         # clear the previous plot and fill with the new plots depending on the radio button
         stime = ptime.time()

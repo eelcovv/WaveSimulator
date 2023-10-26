@@ -164,7 +164,7 @@ class SpectrumPlotDlg(QDialog):
 
         return curvePoint
 
-    # @profile
+    
     def plot_spectrum_modulus_vs_k(self, plot):
 
         # create the plot for the spectrum and the modules
@@ -219,7 +219,7 @@ class SpectrumPlotDlg(QDialog):
             txt.setPos(lx, ly[i])
             plot.addItem(txt, pen=color)
 
-    # @profile
+    
     def plot_spectrum_phase_vs_k(self, plot):
         # create the plot for the spectrum and the modules
 
@@ -241,7 +241,7 @@ class SpectrumPlotDlg(QDialog):
             if self.checkBox_wavepoints[i].isChecked():
                 plot.addItem(pg.ScatterPlotItem(wave.kx_nodes, np.angle(wave.complex_Amplitudes), size=5, pen=color))
 
-    # @profile
+    
     def plot_spectrum_mod_vs_k(self, plot):
         # create the plot for the spectrum and the modules
 
@@ -263,7 +263,7 @@ class SpectrumPlotDlg(QDialog):
             if self.checkBox_wavepoints[i].isChecked():
                 plot.addItem(pg.ScatterPlotItem(wave.kx_nodes, abs(wave.complex_Amplitudes), size=5, pen=color))
 
-    # @profile
+    
     def plot_spectrum_modulus_vs_omega(self, plot):
 
         # Bottom plot: the spectrum vs omega
@@ -308,7 +308,7 @@ class SpectrumPlotDlg(QDialog):
             txt.setPos(lx, ly[i])
             plot.addItem(txt)
 
-    # @profile
+    
     def plot_spreading_vs_theta(self, plot):
 
         # Bottom plot: the spectrum vs omega
@@ -353,7 +353,7 @@ class SpectrumPlotDlg(QDialog):
             txt.setPos(lx, ly[i])
             plot.addItem(txt)
 
-    # @profile
+    
     def plot_k_theta_spectrum_modulus(self, plot):
 
         plot.setTitle('Jonswap k-theta scatter plot of modulus')
@@ -378,7 +378,7 @@ class SpectrumPlotDlg(QDialog):
                 img = pg.ImageItem(abs(wave.E_wave_density_complex_amplitudes), color=color)
                 plot.addItem(img)
 
-    # @profile
+    
     def plot_k_theta_spectrum_phase(self, plot):
 
         plot.setTitle('Jonswap k-theta scatter plot of phase')
@@ -403,7 +403,7 @@ class SpectrumPlotDlg(QDialog):
                 img = pg.ImageItem(np.angle(wave.E_wave_density_complex_amplitudes), color=color)
                 plot.addItem(img)
 
-    # @profile
+    
     def plot_kx_ky_spectrum_modulus(self, plot):
         plot.setTitle('Jonswap kx-ky scatter plot of modulus')
         plot.setLabel('left', "index kx", units='-')
@@ -427,7 +427,7 @@ class SpectrumPlotDlg(QDialog):
                 img = pg.ImageItem(abs(wave.E_wave_density_complex_amplitudes), color=color)
                 plot.addItem(img)
 
-    # @profile
+    
     def plot_kx_ky_spectrum_phase(self, plot):
         plot.setTitle('Jonswap kx-ky scatter plot of phase')
         plot.setLabel('left', "index ky", units='-')
@@ -451,7 +451,7 @@ class SpectrumPlotDlg(QDialog):
                 img = pg.ImageItem(np.angle(wave.E_wave_density_complex_amplitudes), color=color)
                 plot.addItem(img)
 
-    # @profile
+    
     def updatePlots(self):
 
         # clear the previous plot and fill with the new plots depending on the radio button
@@ -505,7 +505,7 @@ class SpectrumPlotDlg(QDialog):
         if self.showSpectraPlot.isChecked():
             self.showSpectraPlot.setChecked(False)
 
-    # @profile
+    
     def clear_plots_and_legends(self):
 
         # clear the plots and manually remove the legend keys
