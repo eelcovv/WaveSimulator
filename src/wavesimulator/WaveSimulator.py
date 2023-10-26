@@ -1,4 +1,7 @@
 __author__ = "Eelco van Vliet"
+__copyright__ = "Eelco van Vliet"
+__license__ = "MIT"
+
 
 import argparse
 import logging
@@ -22,7 +25,7 @@ from scipy import interpolate
 # import the dialog for the spectra
 import SpectrumPlotDlg
 import SurfacePlotDlg
-# import all the icons images (should be generated with
+# import all the icon images (should be generated with
 # pyrcc4 -py3 -o resources.py resources.qrc
 # where resource.qrc is an xml file containing a list with the aliases
 import resources
@@ -34,7 +37,7 @@ from wavesimulator.utils import create_logger, clear_argument_list, get_logger
 from wavesimulator.utils import get_parameter_list_key
 
 # version control to be set up later
-__version__ = 0.1
+from wavesimulator import __version__
 res_file = (
     resources.__file__
 )  # this line is only to prevent the import resources statement to be
